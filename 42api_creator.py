@@ -33,13 +33,55 @@ def GetEndpoints(docs):
                 print(method['api_url'], method['http_method'])
                 endpoints.append(method['api_url'])
 
-    return set(endpoints)
+    return list(set(endpoints))
 
-def CreateApiHandler(docs):
-    endpoints = GetEndpoints(docs)
+def CreateKwargHandler(endpoints, f):
+    """
+    Create methods which contains kwargs
+    and return the remaining endpoints to handle
+    """
+    index = 0
 
-    print(endpoints)
+    # endpoints = ["/v2/users", "/v2/users/:id"]
+    remainEndpoints = []
+    while index < len(endpoints) - 1:
+        firstMatches = re.findall("(\/v2[\/\w+]+)", endpoints[index])
+        secondMatches = re.findall("(\/v2[\/\w+]+)(\/:\w+)", endpoints[index + 1])
+
+        if len(firstMatches) == 1 and len(secondMatches) and firstMatches[0] == secondMatches[0][0]:
+            variable = re.findall("(\/:\w+)", endpoints[index + 1])[0]
+            print(variable)
+            url = endpoints[index]
+            params = ""
+
+            # params = ", " + ", ".join((elem[2:] + "=None" for elem in variables))
+            params = ", {}=None".format(variable[2:])
+            endpoints[index] = endpoints[index].replace(variable, "")
+            url = url.replace(variable, "/{}")
+
+            splitedValue = endpoints[index][4:].split("/")
+            funcName = "".join((elem.capitalize() for elem in splitedValue))
+            payload = """
+    def {}(self{}):
+        extension = "{}/{}".format({}) if {} is not None else "{}"
+        return HttpMethod(extension, self.session)
+        """
+
+            # print(payload.format(funcName, params, url, "{}", variables[0][2:], variables[0][2:], url))
+            f.write(payload.format(funcName, params, url, "{}", variable[2:], variable[2:], url))
+
+            index += 2
+        else:
+            remainEndpoints.append(endpoints[index])
+            index += 1
+
+    return remainEndpoints
+
+
+def CreateHandler(endpoints, f):
     for endpoint in endpoints:
+        # if someone wants to handle graph for me
+        # I appreciate
         if "graph(/on/:field(/by/:interval))" in endpoint:
             continue
 
@@ -55,17 +97,52 @@ def CreateApiHandler(docs):
 
         splitedValue = endpoint[4:].split("/")
         funcName = "".join((elem.capitalize() for elem in splitedValue))
-        payload = """
+        if params == "":
+            payload = """
+    def {}(self{}):
+        extension = "{}"
+        return HttpMethod(extension, self.session)
+        """
+
+            # print(payload.format(funcName, params, url))
+            f.write(payload.format(funcName, params, url))
+
+        else:
+            payload = """
     def {}(self{}):
         extension = "{}".format({})
         return HttpMethod(extension, self.session)
         """
+            # print(payload.format(funcName, params, url, params[2:]))
+            f.write(payload.format(funcName, params, url, params[2:]))
 
-        print(payload.format(funcName, params, url, params[2:]))
+def AppendMethods(docs, f):
+    """
+    Create methods to a .py file
+    """
+    endpoints = GetEndpoints(docs)
+    endpoints.sort()
+
+    remainEndpoints = CreateKwargHandler(endpoints, f)
+    CreateHandler(remainEndpoints, f)
 
 
 if __name__ == "__main__":
     docs = GetJson("https://api.intra.42.fr/apidoc")
     if docs is None:
         exit(-1)
-    CreateApiHandler(docs)
+    try:
+        f = open("FtApi.py", 'w')
+    except Exception as e:
+        print("[-]", e) 
+        exit(-1)
+    try:
+        with open("template.py", 'r') as template:
+            f.write("".join(template.readlines()))
+    except Exception as e:
+        print("[-]", e) 
+        exit(-1)
+
+    print("[+] Copied template !")
+    AppendMethods(docs, f)
+    print("[+] Created methods for 42Api !")

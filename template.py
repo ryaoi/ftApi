@@ -66,7 +66,7 @@ class FtApi:
             test = requests.post("https://api.intra.42.fr/oauth/token", data=payload)
             if test.status_code != 200:
                 raise Exception("wrong status_code:{}".format(test.status_code))
-            parsed_response = json.loads(test.content)
+            parsed_response = json.loads(test.content.decode('utf-8'))
         except Exception as e:
             raise Exception(e)
         
