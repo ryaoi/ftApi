@@ -30,7 +30,7 @@ def GetEndpoints(docs):
     for resource in apiResources:
         for methods in docs['docs']['resources'][resource]['methods']:
             for method in methods['apis']:
-                print(method['api_url'], method['http_method'])
+                print(method)
                 endpoints.append(method['api_url'])
 
     return list(set(endpoints))
@@ -45,16 +45,17 @@ def CreateKwargHandler(endpoints, f):
     # endpoints = ["/v2/users", "/v2/users/:id"]
     remainEndpoints = []
     while index < len(endpoints) - 1:
+        
         firstMatches = re.findall("(\/v2[\/\w+]+)", endpoints[index])
-        secondMatches = re.findall("(\/v2[\/\w+]+)(\/:\w+)", endpoints[index + 1])
-
-        if len(firstMatches) == 1 and len(secondMatches) and firstMatches[0] == secondMatches[0][0]:
+        secondMatches = re.findall("(\/v2[\/\w+]+)(\/:\w+)(\/\w+)*", endpoints[index + 1])
+        print(firstMatches, secondMatches)
+        if len(firstMatches) == len(secondMatches)  \
+                and len(secondMatches[0]) == 3 and secondMatches[0][2] == '' \
+                and firstMatches[0] == secondMatches[0][0]:
             variable = re.findall("(\/:\w+)", endpoints[index + 1])[0]
-            print(variable)
             url = endpoints[index]
             params = ""
 
-            # params = ", " + ", ".join((elem[2:] + "=None" for elem in variables))
             params = ", {}=None".format(variable[2:])
             endpoints[index] = endpoints[index].replace(variable, "")
             url = url.replace(variable, "/{}")
@@ -63,12 +64,15 @@ def CreateKwargHandler(endpoints, f):
             funcName = "".join((elem.capitalize() for elem in splitedValue))
             payload = """
     def {}(self{}):
+        {}
+        More details: "https://api.intra.42.fr/apidoc/2.0/{}.html"
+        {}
         extension = "{}/{}".format({}) if {} is not None else "{}"
         return HttpMethod(extension, self.session)
         """
 
             # print(payload.format(funcName, params, url, "{}", variables[0][2:], variables[0][2:], url))
-            f.write(payload.format(funcName, params, url, "{}", variable[2:], variable[2:], url))
+            f.write(payload.format(funcName, params, '"""', endpoints[index].replace("/v2/", ""), '"""', url, "{}", variable[2:], variable[2:], url))
 
             index += 2
         else:
@@ -95,17 +99,21 @@ def CreateHandler(endpoints, f):
                 endpoint = endpoint.replace(value, "")
                 url = url.replace(value, "/{}")
 
+        # "/v2/test/aaaa" -> ['test', 'aaaa']
         splitedValue = endpoint[4:].split("/")
         funcName = "".join((elem.capitalize() for elem in splitedValue))
         if params == "":
             payload = """
     def {}(self{}):
+        {}
+        More details: "https://api.intra.42.fr/apidoc/2.0/{}.html"
+        {}
         extension = "{}"
         return HttpMethod(extension, self.session)
         """
 
             # print(payload.format(funcName, params, url))
-            f.write(payload.format(funcName, params, url))
+            f.write(payload.format(funcName, params, '"""', funcName.lower(), '"""', url))
 
         else:
             payload = """
@@ -121,9 +129,24 @@ def AppendMethods(docs, f):
     Create methods to a .py file
     """
     endpoints = GetEndpoints(docs)
-    endpoints.sort()
+    #endpoints.sort()
+
+    splittedEndpoints = []
+    for endpoint in endpoints:
+        print(endpoint, endpoint.find("/"))
+        if endpoint.count("/") == 2:
+            splittedEndpoints.append([endpoint, ''])
+            continue
+        indices = [x.start() for x in re.finditer("/", endpoint)]
+        part1 = endpoint[0:indices[2]]
+        part2 = endpoint[indices[2]+1:]
+        splittedEndpoints.append([part1, part2])
+    splittedEndpoints.sort(key=lambda item: (item[0], len(item[1])))
+    endpoints = ["{}/{}".format(elem[0], elem[1]) if len(elem[1]) else elem[0] for elem in splittedEndpoints]
 
     remainEndpoints = CreateKwargHandler(endpoints, f)
+    for elem in remainEndpoints:
+        print(elem)
     CreateHandler(remainEndpoints, f)
 
 
