@@ -17,44 +17,29 @@ class HttpMethod:
         self.session = session
 
     def get(self):
-        try:
-            response = self.session.get(self.url)
-            return json.loads(response.text)
-        except Exception as e:
-            print("[-]", e)
-            return None
+        response = self.session.get(self.url)
+        response.raise_for_status()
+        return json.loads(response.text)
 
     def post(self, data):
-        try:
-            response = self.session.post(self.url, data=data)
-            return json.loads(response.text)
-        except Exception as e:
-            print("[-]", e)
-            return None
+        response = self.session.post(self.url, data=data)
+        response.raise_for_status()
+        return json.loads(response.text)
 
     def patch(self, data):
-        try:
-            response = self.session.patch(self.url, data=data)
-            return json.loads(response.text)
-        except Exception as e:
-            print("[-]", e)
-            return None
+        response = self.session.patch(self.url, data=data)
+        response.raise_for_status()
+        return json.loads(response.text)
 
     def put(self, data):
-        try:
-            response = self.session.put(self.url, data=data)
-            return json.loads(response.text)
-        except Exception as e:
-            print("[-]", e)
-            return None
+        response = self.session.put(self.url, data=data)
+        response.raise_for_status()
+        return json.loads(response.text)
 
     def delete(self):
-        try:
-            response = self.session.delete(self.url)
-            return json.loads(response.text)
-        except Exception as e:
-            print("[-]", e)
-            return None
+        response = self.session.delete(self.url)
+        response.raise_for_status()
+        return json.loads(response.text)
 
 class FtApi:
 
@@ -99,6 +84,8 @@ class FtApi:
         return : HttpMethod
         
         Create a HttpMethod with passed parameter as the endpoint for "https://api.intra.42.fr/"
+
+        example :"/v2/users?filter[pool_year]=2019&page[size]=100&page[number]=3"
         """
         return HttpMethod(endpoint, self.session)
 
