@@ -12,3 +12,11 @@ pip install FtApi
 ## Example
 
 ![example](https://github.com/ryaoi/ftApi/blob/master/img/example.png)
+
+### For myself
+```
+vim CHANGES.txt #update the information
+vim setup.py #change version of the package
+python3 setup.py sdist bdist_wheel
+python3 -m twine upload --skip-existing --repository-url https://upload.pypi.org/legacy/ dist/*
+```

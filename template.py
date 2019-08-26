@@ -13,33 +13,48 @@ class HttpMethod:
     """
 
     def __init__(self, extension, session):
-        self.url = "https://api.intra.42.fr/{}".format(extension)
+        self.url = "https://api.intra.42.fr{}".format(extension)
         self.session = session
 
     def get(self):
+        """
+        return json
+        """
         response = self.session.get(self.url)
         response.raise_for_status()
         return json.loads(response.text)
 
     def post(self, data):
-        response = self.session.post(self.url, data=data)
+        """
+        return response Object
+        """
+        response = self.session.post(self.url, json=data)
         response.raise_for_status()
-        return json.loads(response.text)
+        return response
 
     def patch(self, data):
-        response = self.session.patch(self.url, data=data)
+        """
+        return response Object
+        """
+        response = self.session.patch(self.url, json=data)
         response.raise_for_status()
-        return json.loads(response.text)
+        return response
 
     def put(self, data):
-        response = self.session.put(self.url, data=data)
+        """
+        return response Object
+        """
+        response = self.session.put(self.url, json=data)
         response.raise_for_status()
-        return json.loads(response.text)
+        return response
 
     def delete(self):
+        """
+        return response Object
+        """
         response = self.session.delete(self.url)
         response.raise_for_status()
-        return json.loads(response.text)
+        return response
 
 class FtApi:
 
