@@ -12,7 +12,7 @@ class HttpMethod:
     GET, POST, PATCH, PUT, DELETE request to the initalized url
     """
    
-    def __init__(self, extension, session, *args, **kwargs):
+    def __init__(self, extension, session, **kwargs):
         self.url = "https://api.intra.42.fr{}".format(extension)
         self.filter = kwargs["format"] if "format" in kwargs else {}
         self.page = kwargs["pages"] if "pages" in kwargs else {'size':100, 'number':1}

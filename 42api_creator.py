@@ -55,7 +55,8 @@ def CreateKwargHandler(endpoints, f):
             variable = re.findall("(\/:\w+)", endpoints[index + 1])[0]
             url = endpoints[index]
             #params = ", {}=None".format(variable[2:])
-            params = ", *args, {}=None, **kwargs".format(variable[2:])
+            # params = ", *args, {}=None, **kwargs".format(variable[2:])
+            params = ", {}=None, **kwargs".format(variable[2:])
             endpoints[index] = endpoints[index].replace(variable, "")
             url = url.replace(variable, "/{}")
 
@@ -67,7 +68,7 @@ def CreateKwargHandler(endpoints, f):
         More details: "https://api.intra.42.fr/apidoc/2.0/{}.html"
         {}
         extension = "{}/{}".format({}) if {} is not None else "{}"
-        return HttpMethod(extension, self.session, *args, **kwargs)
+        return HttpMethod(extension, self.session, **kwargs)
         """
 
             # print(payload.format(funcName, params, url, "{}", variables[0][2:], variables[0][2:], url))
@@ -108,20 +109,20 @@ def CreateHandler(endpoints, f):
         More details: "https://api.intra.42.fr/apidoc/2.0/{}.html"
         {}
         extension = "{}"
-        return HttpMethod(extension, self.session, *args, **kwargs)
+        return HttpMethod(extension, self.session, **kwargs)
         """
 
             # f.write(payload.format(funcName, params, '"""', funcName.lower(), '"""', url))
-            f.write(payload.format(funcName, ", *args, **kwargs", '"""', funcName.lower(), '"""', url))
+            f.write(payload.format(funcName, ", **kwargs", '"""', funcName.lower(), '"""', url))
 
         else:
             payload = """
     def {}(self{}):
         extension = "{}".format({})
-        return HttpMethod(extension, self.session, *args, **kwargs)
+        return HttpMethod(extension, self.session, **kwargs)
         """
             # f.write(payload.format(funcName, params, url, params[2:]))
-            f.write(payload.format(funcName, params + ", *args, **kwargs", url, params[2:]))
+            f.write(payload.format(funcName, params + ",**kwargs", url, params[2:]))
 
 def AppendMethods(docs, f):
     """
