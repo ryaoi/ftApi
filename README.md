@@ -15,6 +15,8 @@ pip install FtApi
 
 ### For myself
 ```
+launch 42api_creator.py
+cp FtApi.py inside the folder FtApi
 vim CHANGES.txt #update the information
 vim setup.py #change version of the package
 python3 setup.py sdist bdist_wheel

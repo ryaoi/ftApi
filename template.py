@@ -11,20 +11,41 @@ class HttpMethod:
     HttpMethod will have methods to send
     GET, POST, PATCH, PUT, DELETE request to the initalized url
     """
-
-    def __init__(self, extension, session):
+   
+    def __init__(self, extension, session, *args, **kwargs):
         self.url = "https://api.intra.42.fr{}".format(extension)
+        self.filter = kwargs["format"] if "format" in kwargs else {}
+        self.page = kwargs["pages"] if "pages" in kwargs else {'size':100, 'number':1}
+        self.sort = kwargs["sort"] if "sort" in kwargs else ""
         self.session = session
 
-    def get(self):
+    def ParseParams(self):
+
+        filter_query = "&".join([f"filter[{key}]={value}" for key, value in self.filter.items()]) if self.filter else ""
+        page_query = "&".join([f"page[{key}]={value}" for key, value in self.page.items()]) if self.page else ""
+
+        result = filter_query or page_query
+        if filter_query and page_query:
+            result = f"?{filter_query}&{page_query}"
+
+        if self.sort:
+            if result:
+                result += f"&sort={self.sort}"
+            else:
+                result = f"sort={self.sort}"
+
+        return f"?{result}" if result else ""
+ 
+    def Get(self):
         """
         return json
         """
-        response = self.session.get(self.url)
+        response = self.session.get(self.url + self.ParseParams())
         response.raise_for_status()
+        if self.page and "number" in self.page: self.page['number'] += 1
         return json.loads(response.text)
 
-    def post(self, data):
+    def Post(self, data):
         """
         return response Object
         """
@@ -32,7 +53,7 @@ class HttpMethod:
         response.raise_for_status()
         return response
 
-    def patch(self, data):
+    def Patch(self, data):
         """
         return response Object
         """
@@ -40,7 +61,7 @@ class HttpMethod:
         response.raise_for_status()
         return response
 
-    def put(self, data):
+    def Put(self, data):
         """
         return response Object
         """
@@ -48,7 +69,7 @@ class HttpMethod:
         response.raise_for_status()
         return response
 
-    def delete(self):
+    def Delete(self):
         """
         return response Object
         """

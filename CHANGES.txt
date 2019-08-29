@@ -1,3 +1,5 @@
 v1.6, 21/07/2019 -- FtApi 
 v1.7, 08/08/2019 -- FtApi will convert your input data to json for POST, PATCH, PUT
 v1.8, 26/08/2019 -- FtApi will return response Object when HTTP Method POST, PATCH, PUT or DELETE is used
+v1.9, 29/08/2019 -- FtApi will handle the pagination for GET request. paging, filter, sort is available.
+v1.9.1, 29/08/2019 -- Forgot to update oups
