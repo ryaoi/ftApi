@@ -11,9 +11,9 @@ requires = [
 
 setup(
     name='FtApi',
-    version='1.9.2', 
+    version='1.9.8', 
     author="ryaoi",
-    author_email="ryaoi@student.42.fr",
+    author_email="nop@42.codes",
     url="https://github.com/ryaoi/ftApi",
     license='LICENSE.txt',
     description='Class for manipulating 42 Api',

@@ -4,3 +4,9 @@ v1.8, 26/08/2019 -- FtApi will return response Object when HTTP Method POST, PAT
 v1.9, 29/08/2019 -- FtApi will handle the pagination for GET request. paging, filter, sort is available.
 v1.9.1, 29/08/2019 -- Forgot to update oups
 v1.9.2, 29/08/2019 -- delete *args for now because its useless
+v1.9.3, 19/09/2019 -- adding code value inside payload to get Bearer (handle OAUTH2)
+v1.9.4, 19/09/2019 -- Forgot to push
+v1.9.5, 19/09/2019 -- grant type for OAuth2 should be authorization_code
+v1.9.6, 19/09/2019 -- Forgot to push
+v1.9.7, 19/09/2019 -- zzz API needs redirect_uri to work...
+v1.9.8, 19/09/2019 -- Can initialize the class with only bearer

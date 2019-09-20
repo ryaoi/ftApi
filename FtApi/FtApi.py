@@ -79,13 +79,17 @@ class HttpMethod:
 
 class FtApi:
 
-    def __init__(self, uid, secret):
+    def __init__(self, uid, secret, code=None, redirect=None, bearer=None):
         self.uid = uid
         self.secret = secret
-        try:
-            self.bearer = self.GetBearer()
-        except Exception as e:
-            raise Exception(e)
+        self.code = code
+        self.redirect = redirect
+        self.bearer = bearer
+        if self.bearer is None:
+            try:
+                self.bearer = self.GetBearer()
+            except Exception as e:
+                raise Exception(e)
         self.session = requests.Session()
         self.session.headers.update({'Authorization': 'Bearer {}'.format(self.bearer)})
 
@@ -94,13 +98,17 @@ class FtApi:
         Makes a call to get Bearer with your crendentials
         return: string
         """
-        payload = {'grant_type':'client_credentials', 'client_id': self.uid,
-                'client_secret': self.secret}
+        if self.code:
+            payload = {'grant_type':'authorization_code', 'client_id': self.uid,
+                    'client_secret': self.secret, 'code':self.code, 'redirect_uri':self.redirect}
+        else:
+            payload = {'grant_type':'client_credentials', 'client_id': self.uid,
+                    'client_secret': self.secret}
         try:
-            test = requests.post("https://api.intra.42.fr/oauth/token", data=payload)
-            if test.status_code != 200:
-                raise Exception("wrong status_code:{}".format(test.status_code))
-            parsed_response = json.loads(test.content.decode('utf-8'))
+            response = requests.post("https://api.intra.42.fr/oauth/token", data=payload)
+            if response.status_code != 200:
+                raise Exception("wrong status_code:{}".format(response.status_code))
+            parsed_response = json.loads(response.content.decode('utf-8'))
         except Exception as e:
             raise Exception(e)
         
@@ -705,12 +713,12 @@ class FtApi:
         extension = "/v2/blocs/{}/scores".format(bloc_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def BlocsCoalitions(self, bloc_id,**kwargs):
-        extension = "/v2/blocs/{}/coalitions".format(bloc_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def BlocsScores(self, bloc_id, id,**kwargs):
         extension = "/v2/blocs/{}/scores/{}".format(bloc_id, id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def BlocsCoalitions(self, bloc_id,**kwargs):
+        extension = "/v2/blocs/{}/coalitions".format(bloc_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def BlocsBloc_deadlines(self, bloc_id,**kwargs):
@@ -721,20 +729,20 @@ class FtApi:
         extension = "/v2/campus/{}/users".format(campus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def CampusNotes(self, campus_id,**kwargs):
-        extension = "/v2/campus/{}/notes".format(campus_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def CampusExams(self, campus_id,**kwargs):
         extension = "/v2/campus/{}/exams".format(campus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def CampusQuests(self, campus_id,**kwargs):
-        extension = "/v2/campus/{}/quests".format(campus_id)
+    def CampusNotes(self, campus_id,**kwargs):
+        extension = "/v2/campus/{}/notes".format(campus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CampusEvents(self, campus_id,**kwargs):
         extension = "/v2/campus/{}/events".format(campus_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def CampusQuests(self, campus_id,**kwargs):
+        extension = "/v2/campus/{}/quests".format(campus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CampusProducts(self, campus_id,**kwargs):
@@ -745,12 +753,16 @@ class FtApi:
         extension = "/v2/campus/{}/locations".format(campus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def CampusAchievements(self, campus_id,**kwargs):
-        extension = "/v2/campus/{}/achievements".format(campus_id)
+    def CampusBroadcasts(self, campus_id,**kwargs):
+        extension = "/v2/campus/{}/broadcasts".format(campus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CampusProducts(self, campus_id, id,**kwargs):
         extension = "/v2/campus/{}/products/{}".format(campus_id, id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def CampusAchievements(self, campus_id,**kwargs):
+        extension = "/v2/campus/{}/achievements".format(campus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CampusLocationsEnd_all(self, campus_id,**kwargs):
@@ -813,36 +825,36 @@ class FtApi:
         extension = "/v2/cursus/{}/tags".format(cursus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def CursusTeams(self, cursus_id,**kwargs):
-        extension = "/v2/cursus/{}/teams".format(cursus_id)
+    def CursusUsers(self, cursus_id,**kwargs):
+        extension = "/v2/cursus/{}/users".format(cursus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CursusExams(self, cursus_id,**kwargs):
         extension = "/v2/cursus/{}/exams".format(cursus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def CursusUsers(self, cursus_id,**kwargs):
-        extension = "/v2/cursus/{}/users".format(cursus_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def CursusLevels(self, cursus_id,**kwargs):
-        extension = "/v2/cursus/{}/levels".format(cursus_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def CursusTopics(self, cursus_id,**kwargs):
-        extension = "/v2/cursus/{}/topics".format(cursus_id)
+    def CursusTeams(self, cursus_id,**kwargs):
+        extension = "/v2/cursus/{}/teams".format(cursus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CursusQuests(self, cursus_id,**kwargs):
         extension = "/v2/cursus/{}/quests".format(cursus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def CursusEvents(self, cursus_id,**kwargs):
-        extension = "/v2/cursus/{}/events".format(cursus_id)
+    def CursusTopics(self, cursus_id,**kwargs):
+        extension = "/v2/cursus/{}/topics".format(cursus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CursusSkills(self, cursus_id,**kwargs):
         extension = "/v2/cursus/{}/skills".format(cursus_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def CursusLevels(self, cursus_id,**kwargs):
+        extension = "/v2/cursus/{}/levels".format(cursus_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def CursusEvents(self, cursus_id,**kwargs):
+        extension = "/v2/cursus/{}/events".format(cursus_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def CursusNotions(self, cursus_id,**kwargs):
@@ -951,6 +963,13 @@ class FtApi:
         extension = "/v2/me"
         return HttpMethod(extension, self.session, **kwargs)
         
+    def MeSlots(self, **kwargs):
+        """
+        More details: "https://api.intra.42.fr/apidoc/2.0/meslots.html"
+        """
+        extension = "/v2/me/slots"
+        return HttpMethod(extension, self.session, **kwargs)
+        
     def MeVotes(self, **kwargs):
         """
         More details: "https://api.intra.42.fr/apidoc/2.0/mevotes.html"
@@ -965,13 +984,6 @@ class FtApi:
         extension = "/v2/me/teams"
         return HttpMethod(extension, self.session, **kwargs)
         
-    def MeSlots(self, **kwargs):
-        """
-        More details: "https://api.intra.42.fr/apidoc/2.0/meslots.html"
-        """
-        extension = "/v2/me/slots"
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def MeTopics(self, **kwargs):
         """
         More details: "https://api.intra.42.fr/apidoc/2.0/metopics.html"
@@ -979,18 +991,18 @@ class FtApi:
         extension = "/v2/me/topics"
         return HttpMethod(extension, self.session, **kwargs)
         
-    def MeProjects(self, **kwargs):
-        """
-        More details: "https://api.intra.42.fr/apidoc/2.0/meprojects.html"
-        """
-        extension = "/v2/me/projects"
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def MeMessages(self, **kwargs):
         """
         More details: "https://api.intra.42.fr/apidoc/2.0/memessages.html"
         """
         extension = "/v2/me/messages"
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def MeProjects(self, **kwargs):
+        """
+        More details: "https://api.intra.42.fr/apidoc/2.0/meprojects.html"
+        """
+        extension = "/v2/me/projects"
         return HttpMethod(extension, self.session, **kwargs)
         
     def MeScale_teams(self, **kwargs):
@@ -1032,18 +1044,18 @@ class FtApi:
         extension = "/v2/me/topics/{}/votes".format(topic_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def MeScale_teamsAs_corrected(self, **kwargs):
-        """
-        More details: "https://api.intra.42.fr/apidoc/2.0/mescale_teamsas_corrected.html"
-        """
-        extension = "/v2/me/scale_teams/as_corrected"
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def MeScale_teamsAs_corrector(self, **kwargs):
         """
         More details: "https://api.intra.42.fr/apidoc/2.0/mescale_teamsas_corrector.html"
         """
         extension = "/v2/me/scale_teams/as_corrector"
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def MeScale_teamsAs_corrected(self, **kwargs):
+        """
+        More details: "https://api.intra.42.fr/apidoc/2.0/mescale_teamsas_corrected.html"
+        """
+        extension = "/v2/me/scale_teams/as_corrected"
         return HttpMethod(extension, self.session, **kwargs)
         
     def MeMessagesVotes(self, message_id,**kwargs):
@@ -1138,24 +1150,24 @@ class FtApi:
         extension = "/v2/pools/{}/balances/{}".format(pool_id, id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def Project_sessionsTeams(self, project_session_id,**kwargs):
-        extension = "/v2/project_sessions/{}/teams".format(project_session_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def Project_sessionsRules(self, project_session_id,**kwargs):
         extension = "/v2/project_sessions/{}/rules".format(project_session_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def Project_sessionsTeams(self, project_session_id,**kwargs):
+        extension = "/v2/project_sessions/{}/teams".format(project_session_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def Project_sessionsScales(self, project_session_id,**kwargs):
         extension = "/v2/project_sessions/{}/scales".format(project_session_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def Project_sessionsAttachments(self, project_session_id,**kwargs):
-        extension = "/v2/project_sessions/{}/attachments".format(project_session_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def Project_sessionsEvaluations(self, project_session_id,**kwargs):
         extension = "/v2/project_sessions/{}/evaluations".format(project_session_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def Project_sessionsAttachments(self, project_session_id,**kwargs):
+        extension = "/v2/project_sessions/{}/attachments".format(project_session_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def Project_sessionsProject_data(self, project_session_id,**kwargs):
@@ -1198,32 +1210,24 @@ class FtApi:
         extension = "/v2/projects/{}/users".format(project_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def ProjectsSlots(self, project_id,**kwargs):
-        extension = "/v2/projects/{}/slots".format(project_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def ProjectsTeams(self, project_id,**kwargs):
         extension = "/v2/projects/{}/teams".format(project_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def ProjectsSkills(self, project_id,**kwargs):
-        extension = "/v2/projects/{}/skills".format(project_id)
+    def ProjectsSlots(self, project_id,**kwargs):
+        extension = "/v2/projects/{}/slots".format(project_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def ProjectsScales(self, project_id,**kwargs):
         extension = "/v2/projects/{}/scales".format(project_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def ProjectsRegister(self, project_id,**kwargs):
-        extension = "/v2/projects/{}/register".format(project_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def ProjectsProjects(self, project_id,**kwargs):
         extension = "/v2/projects/{}/projects".format(project_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def ProjectsAttachments(self, project_id,**kwargs):
-        extension = "/v2/projects/{}/attachments".format(project_id)
+    def ProjectsRegister(self, project_id,**kwargs):
+        extension = "/v2/projects/{}/register".format(project_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def ProjectsScale_teams(self, project_id,**kwargs):
@@ -1232,6 +1236,10 @@ class FtApi:
         
     def ProjectsEvaluations(self, project_id,**kwargs):
         extension = "/v2/projects/{}/evaluations".format(project_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def ProjectsAttachments(self, project_id,**kwargs):
+        extension = "/v2/projects/{}/attachments".format(project_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def ProjectsProjects_users(self, project_id,**kwargs):
@@ -1305,12 +1313,12 @@ class FtApi:
         extension = "/v2/teams/{}/teams_users".format(team_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def TeamsReset_team_uploads(self, id,**kwargs):
-        extension = "/v2/teams/{}/reset_team_uploads".format(id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def TeamsTeams_uploads(self, team_id,**kwargs):
         extension = "/v2/teams/{}/teams_uploads".format(team_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def TeamsReset_team_uploads(self, id,**kwargs):
+        extension = "/v2/teams/{}/reset_team_uploads".format(id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def Teams_uploadsMultiple_create(self, **kwargs):
@@ -1324,12 +1332,12 @@ class FtApi:
         extension = "/v2/titles/{}/users".format(title_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def TitlesTitles_users(self, title_id,**kwargs):
-        extension = "/v2/titles/{}/titles_users".format(title_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def TitlesAchievements(self, title_id,**kwargs):
         extension = "/v2/titles/{}/achievements".format(title_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def TitlesTitles_users(self, title_id,**kwargs):
+        extension = "/v2/titles/{}/titles_users".format(title_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def TopicsUnread(self, **kwargs):
@@ -1351,12 +1359,12 @@ class FtApi:
         extension = "/v2/topics/{}/messages".format(topic_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def TopicsCursus_topics(self, topic_id,**kwargs):
-        extension = "/v2/topics/{}/cursus_topics".format(topic_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def TopicsVotesUpvotes(self, topic_id,**kwargs):
         extension = "/v2/topics/{}/votes/upvotes".format(topic_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def TopicsCursus_topics(self, topic_id,**kwargs):
+        extension = "/v2/topics/{}/cursus_topics".format(topic_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def TopicsVotesProblems(self, topic_id,**kwargs):
@@ -1394,6 +1402,14 @@ class FtApi:
         extension = "/v2/users/{}/apps".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
+    def UsersSlots(self, user_id,**kwargs):
+        extension = "/v2/users/{}/slots".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def UsersTeams(self, user_id,**kwargs):
+        extension = "/v2/users/{}/teams".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
     def UsersExams(self, user_id,**kwargs):
         extension = "/v2/users/{}/exams".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
@@ -1402,52 +1418,44 @@ class FtApi:
         extension = "/v2/users/{}/notes".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersTeams(self, user_id,**kwargs):
-        extension = "/v2/users/{}/teams".format(user_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def UsersSlots(self, user_id,**kwargs):
-        extension = "/v2/users/{}/slots".format(user_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def UsersRoles(self, user_id,**kwargs):
         extension = "/v2/users/{}/roles".format(user_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def UsersQuests(self, user_id,**kwargs):
-        extension = "/v2/users/{}/quests".format(user_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def UsersCloses(self, user_id,**kwargs):
-        extension = "/v2/users/{}/closes".format(user_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def UsersEvents(self, user_id,**kwargs):
-        extension = "/v2/users/{}/events".format(user_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def UsersScales(self, user_id,**kwargs):
-        extension = "/v2/users/{}/scales".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersTitles(self, user_id,**kwargs):
         extension = "/v2/users/{}/titles".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersTopics(self, user_id,**kwargs):
-        extension = "/v2/users/{}/topics".format(user_id)
+    def UsersEvents(self, user_id,**kwargs):
+        extension = "/v2/users/{}/events".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersGroups(self, user_id,**kwargs):
         extension = "/v2/users/{}/groups".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersMessages(self, user_id,**kwargs):
-        extension = "/v2/users/{}/messages".format(user_id)
+    def UsersCloses(self, user_id,**kwargs):
+        extension = "/v2/users/{}/closes".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def UsersScales(self, user_id,**kwargs):
+        extension = "/v2/users/{}/scales".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def UsersTopics(self, user_id,**kwargs):
+        extension = "/v2/users/{}/topics".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def UsersQuests(self, user_id,**kwargs):
+        extension = "/v2/users/{}/quests".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersMailings(self, user_id,**kwargs):
         extension = "/v2/users/{}/mailings".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def UsersMessages(self, user_id,**kwargs):
+        extension = "/v2/users/{}/messages".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersLocations(self, user_id,**kwargs):
@@ -1462,20 +1470,24 @@ class FtApi:
         extension = "/v2/users/{}/patronages".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersScale_teams(self, user_id,**kwargs):
-        extension = "/v2/users/{}/scale_teams".format(user_id)
+    def UsersExperiences(self, user_id,**kwargs):
+        extension = "/v2/users/{}/experiences".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersTeams_users(self, user_id,**kwargs):
-        extension = "/v2/users/{}/teams_users".format(user_id)
+    def UsersScale_teams(self, user_id,**kwargs):
+        extension = "/v2/users/{}/scale_teams".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersInternships(self, user_id,**kwargs):
         extension = "/v2/users/{}/internships".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersExperiences(self, user_id,**kwargs):
-        extension = "/v2/users/{}/experiences".format(user_id)
+    def UsersTeams_users(self, user_id,**kwargs):
+        extension = "/v2/users/{}/teams_users".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def UsersEvents_users(self, user_id,**kwargs):
+        extension = "/v2/users/{}/events_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersQuests_users(self, user_id,**kwargs):
@@ -1486,20 +1498,16 @@ class FtApi:
         extension = "/v2/users/{}/transactions".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersEvents_users(self, user_id,**kwargs):
-        extension = "/v2/users/{}/events_users".format(user_id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def UsersCampus_users(self, user_id,**kwargs):
-        extension = "/v2/users/{}/campus_users".format(user_id)
+    def UsersCursus_users(self, user_id,**kwargs):
+        extension = "/v2/users/{}/cursus_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersGroups_users(self, user_id,**kwargs):
         extension = "/v2/users/{}/groups_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersCursus_users(self, user_id,**kwargs):
-        extension = "/v2/users/{}/cursus_users".format(user_id)
+    def UsersCampus_users(self, user_id,**kwargs):
+        extension = "/v2/users/{}/campus_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersTitles_users(self, user_id,**kwargs):
@@ -1514,12 +1522,16 @@ class FtApi:
         extension = "/v2/users/{}/projects_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
+    def UsersLanguages_users(self, user_id,**kwargs):
+        extension = "/v2/users/{}/languages_users".format(user_id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
     def UsersInternships(self, user_id, id,**kwargs):
         extension = "/v2/users/{}/internships/{}".format(user_id, id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersLanguages_users(self, user_id,**kwargs):
-        extension = "/v2/users/{}/languages_users".format(user_id)
+    def UsersCoalitions_users(self, user_id,**kwargs):
+        extension = "/v2/users/{}/coalitions_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersExpertises_users(self, user_id,**kwargs):
@@ -1528,10 +1540,6 @@ class FtApi:
         
     def UsersCorrection_pointsAdd(self, id,**kwargs):
         extension = "/v2/users/{}/correction_points/add".format(id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
-    def UsersCoalitions_users(self, user_id,**kwargs):
-        extension = "/v2/users/{}/coalitions_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersUser_candidature(self, user_id,**kwargs):
@@ -1546,12 +1554,12 @@ class FtApi:
         extension = "/v2/users/{}/certificates_users".format(user_id)
         return HttpMethod(extension, self.session, **kwargs)
         
-    def UsersCorrection_pointsRemove(self, id,**kwargs):
-        extension = "/v2/users/{}/correction_points/remove".format(id)
-        return HttpMethod(extension, self.session, **kwargs)
-        
     def UsersLanguages_users(self, user_id, id,**kwargs):
         extension = "/v2/users/{}/languages_users/{}".format(user_id, id)
+        return HttpMethod(extension, self.session, **kwargs)
+        
+    def UsersCorrection_pointsRemove(self, id,**kwargs):
+        extension = "/v2/users/{}/correction_points/remove".format(id)
         return HttpMethod(extension, self.session, **kwargs)
         
     def UsersScale_teamsAs_corrector(self, user_id,**kwargs):
@@ -1594,10 +1602,3 @@ class FtApi:
         extension = "/v2/votes/trollvotes"
         return HttpMethod(extension, self.session, **kwargs)
         
-
-if __name__ == "__main__":
-    import os
-    ft = FtApi(os.environ['UID42'], os.environ['SECRET42'])
-    test = ft.Users(filter={'pool_year':2019, 'pool_month':'August'}).Get()
-    from pprint import pprint
-    pprint(test)
