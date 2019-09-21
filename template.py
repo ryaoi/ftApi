@@ -79,13 +79,17 @@ class HttpMethod:
 
 class FtApi:
 
-    def __init__(self, uid, secret):
+    def __init__(self, uid, secret, code=None, redirect=None, bearer=None):
         self.uid = uid
         self.secret = secret
-        try:
-            self.bearer = self.GetBearer()
-        except Exception as e:
-            raise Exception(e)
+        self.code = code
+        self.redirect = redirect
+        self.bearer = bearer
+        if self.bearer is None:
+            try:
+                self.bearer = self.GetBearer()
+            except Exception as e:
+                raise Exception(e)
         self.session = requests.Session()
         self.session.headers.update({'Authorization': 'Bearer {}'.format(self.bearer)})
 
@@ -94,13 +98,17 @@ class FtApi:
         Makes a call to get Bearer with your crendentials
         return: string
         """
-        payload = {'grant_type':'client_credentials', 'client_id': self.uid,
-                'client_secret': self.secret}
+        if self.code:
+            payload = {'grant_type':'authorization_code', 'client_id': self.uid,
+                    'client_secret': self.secret, 'code':self.code, 'redirect_uri':self.redirect}
+        else:
+            payload = {'grant_type':'client_credentials', 'client_id': self.uid,
+                    'client_secret': self.secret}
         try:
-            test = requests.post("https://api.intra.42.fr/oauth/token", data=payload)
-            if test.status_code != 200:
-                raise Exception("wrong status_code:{}".format(test.status_code))
-            parsed_response = json.loads(test.content.decode('utf-8'))
+            response = requests.post("https://api.intra.42.fr/oauth/token", data=payload)
+            if response.status_code != 200:
+                raise Exception("wrong status_code:{}".format(response.status_code))
+            parsed_response = json.loads(response.content.decode('utf-8'))
         except Exception as e:
             raise Exception(e)
         
