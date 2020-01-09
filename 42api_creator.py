@@ -122,7 +122,7 @@ def CreateHandler(endpoints, f):
         return HttpMethod(extension, self.session, **kwargs)
         """
             # f.write(payload.format(funcName, params, url, params[2:]))
-            f.write(payload.format(funcName, params + ",**kwargs", url, params[2:]))
+            f.write(payload.format(funcName, params + ", **kwargs", url, params[2:]))
 
 def AppendMethods(docs, f):
     """

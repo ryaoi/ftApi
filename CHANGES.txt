@@ -11,3 +11,4 @@ v1.9.6, 19/09/2019 -- Forgot to push
 v1.9.7, 19/09/2019 -- zzz API needs redirect_uri to work...
 v1.9.8, 19/09/2019 -- Can initialize the class with only bearer
 v1.9.9, 17/11/2019 -- Modified the kwarg option format to filter
+v1.9.10, 09/01/2020 -- Fixed the issue with double question mark on url

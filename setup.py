@@ -11,7 +11,7 @@ requires = [
 
 setup(
     name='FtApi',
-    version='1.9.9', 
+    version='1.9.10', 
     author="ryaoi",
     author_email="nop@42.codes",
     url="https://github.com/ryaoi/ftApi",
