@@ -97,6 +97,7 @@ class FtApi:
         self.code = code
         self.redirect = redirect
         self.bearer = bearer
+        self.scope = "public projects profile elearning tig forum"
         if self.bearer is None:
             try:
                 self.bearer = self.GetBearer()
@@ -117,7 +118,7 @@ class FtApi:
             payload = {'grant_type':'authorization_code', 'client_id': self.uid,
                     'client_secret': self.secret, 'code':self.code, 'redirect_uri':self.redirect}
         else:
-            payload = {'grant_type':'client_credentials', 'client_id': self.uid,
+            payload = {'grant_type':'client_credentials', 'client_id': self.uid, "scope": self.scope, 
                     'client_secret': self.secret}
         try:
             response = requests.post("https://api.intra.42.fr/oauth/token", data=payload)
