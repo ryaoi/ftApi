@@ -26,7 +26,7 @@ class HttpMethod:
 
         result = filter_query or page_query
         if filter_query and page_query:
-            result = f"?{filter_query}&{page_query}"
+            result = f"{filter_query}&{page_query}"
 
         if self.sort:
             if result:
@@ -50,7 +50,10 @@ class HttpMethod:
         return response Object
         """
         response = self.session.post(self.url, json=data)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except:
+            raise Exception(f"[{response.status_code}] {response.content}")
         return response
 
     def Patch(self, data):
@@ -58,7 +61,10 @@ class HttpMethod:
         return response Object
         """
         response = self.session.patch(self.url, json=data)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except:
+            raise Exception(f"[{response.status_code}] {response.content}")
         return response
 
     def Put(self, data):
@@ -66,7 +72,10 @@ class HttpMethod:
         return response Object
         """
         response = self.session.put(self.url, json=data)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except:
+            raise Exception(f"[{response.status_code}] {response.content}")
         return response
 
     def Delete(self):
@@ -74,14 +83,17 @@ class HttpMethod:
         return response Object
         """
         response = self.session.delete(self.url)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except:
+            raise Exception(f"[{response.status_code}] {response.content}")
         return response
 
 class FtApi:
 
-    def __init__(self, uid, secret, code=None, redirect=None, bearer=None):
-        self.uid = uid
-        self.secret = secret
+    def __init__(self, uid=None, secret=None, code=None, redirect=None, bearer=None):
+        self.uid = uid if uid is not None else os.environ['UID42']
+        self.secret = secret if secret is not None else os.environ['SECRET42']
         self.code = code
         self.redirect = redirect
         self.bearer = bearer
@@ -92,6 +104,9 @@ class FtApi:
                 raise Exception(e)
         self.session = requests.Session()
         self.session.headers.update({'Authorization': 'Bearer {}'.format(self.bearer)})
+
+    def FastInit(self):
+        self.__init__(os.environ['UID42'], os.environ['SECRET42'])
 
     def GetBearer(self):
         """
