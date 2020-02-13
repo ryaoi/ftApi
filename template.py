@@ -17,22 +17,28 @@ class HttpMethod:
         self.filter = kwargs["filter"] if "filter" in kwargs else {}
         self.page = kwargs["pages"] if "pages" in kwargs else {'size':100, 'number':1}
         self.sort = kwargs["sort"] if "sort" in kwargs else ""
+        self.range = kwargs["range"] if "range" in kwargs else {}
         self.session = session
 
     def ParseParams(self):
 
         filter_query = "&".join([f"filter[{key}]={value}" for key, value in self.filter.items()]) if self.filter else ""
         page_query = "&".join([f"page[{key}]={value}" for key, value in self.page.items()]) if self.page else ""
+        range_query = "&".join([f"range[{key}]={value}" for key, value in self.range.items()]) if self.range else ""
 
-        result = filter_query or page_query
-        if filter_query and page_query:
-            result = f"{filter_query}&{page_query}"
+        result = "&".join([query for query in [filter_query, page_query, range_query] if query != ""])
 
         if self.sort:
             if result:
                 result += f"&sort={self.sort}"
             else:
                 result = f"sort={self.sort}"
+
+        if self.range:
+            if result:
+                result += f"&range={self.range}"
+            else:
+                result = f"range={self.range}"
 
         return f"?{result}" if result else ""
  
@@ -138,7 +144,7 @@ class FtApi:
         self.session = requests.Session()
         self.session.headers.update({'Authorization': 'Bearer {}'.format(self.bearer)})
 
-    def RawEndpoint(self, endpoint):
+    def RawEndpoint(self, endpoint, **kwargs):
         """
         parameter : string
         return : HttpMethod
@@ -147,7 +153,7 @@ class FtApi:
 
         example :"/v2/users?filter[pool_year]=2019&page[size]=100&page[number]=3"
         """
-        return HttpMethod(endpoint, self.session)
+        return HttpMethod(endpoint, self.session, **kwargs)
 
     def ColorizeJsonOutput(self, jsonObject):
         jsonStr = json.dumps(jsonObject, indent=4, sort_keys=True)
