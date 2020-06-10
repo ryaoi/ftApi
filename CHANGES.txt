@@ -15,3 +15,4 @@ v1.9.10, 09/01/2020 -- Fixed the issue with double question mark on url
 v1.9.11, 09/01/2020 -- Just a temporary push to test
 v2.0.0, 13/01/2020 -- Better error msg
 v2.0.1, 13/01/2020 -- Adjust scope
+v2.0.2, 10/06/2020 -- Fixed range parameter duplication issue
