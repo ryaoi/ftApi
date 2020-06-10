@@ -34,12 +34,6 @@ class HttpMethod:
             else:
                 result = f"sort={self.sort}"
 
-        if self.range:
-            if result:
-                result += f"&range={self.range}"
-            else:
-                result = f"range={self.range}"
-
         return f"?{result}" if result else ""
  
     def Get(self):
