@@ -18,3 +18,4 @@ v2.0.1, 13/01/2020 -- Adjust scope
 v2.0.2, 10/06/2020 -- Fixed range parameter duplication issue
 v2.1.2, 10/06/2020 -- Fixed range parameter duplication issue
 v2.2.0, 30/07/2020 -- Intra added Campus/journal endpoint
+v2.2.1, 30/07/2020 -- 2.2.0 seems to use the old version...
