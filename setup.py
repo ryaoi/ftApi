@@ -6,12 +6,12 @@ requires = [
     'idna>=2.8',
     'Pygments>=2.4.2',
     'requests>=2.22.0',
-    'urllib3>=1.25.3'
+    'urllib3>=1.26.5'
 ]
 
 setup(
     name='FtApi',
-    version='2.2.2', 
+    version='2.2.3', 
     author="ryaoi",
     author_email="nop@42.codes",
     url="https://github.com/ryaoi/ftApi",
