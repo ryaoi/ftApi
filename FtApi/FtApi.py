@@ -92,8 +92,8 @@ class HttpMethod:
 class FtApi:
 
     def __init__(self, uid=None, secret=None, code=None, redirect=None, bearer=None, scope=None):
-        self.uid = uid if uid is not None else os.environ['UID42']
-        self.secret = secret if secret is not None else os.environ['SECRET42']
+        self.uid = uid if uid is not None else os.environ['UID42'] if bearer is None else ""
+        self.secret = secret if secret is not None else os.environ['SECRET42'] if bearer is None else ""
         self.code = code
         self.redirect = redirect
         self.bearer = bearer
