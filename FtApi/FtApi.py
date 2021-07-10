@@ -91,13 +91,13 @@ class HttpMethod:
 
 class FtApi:
 
-    def __init__(self, uid=None, secret=None, code=None, redirect=None, bearer=None):
+    def __init__(self, uid=None, secret=None, code=None, redirect=None, bearer=None, scope=None):
         self.uid = uid if uid is not None else os.environ['UID42']
         self.secret = secret if secret is not None else os.environ['SECRET42']
         self.code = code
         self.redirect = redirect
         self.bearer = bearer
-        self.scope = "public projects profile elearning tig forum"
+        self.scope = scope if scope is not None else "public projects profile elearning tig forum"
         if self.bearer is None:
             try:
                 self.bearer = self.GetBearer()
